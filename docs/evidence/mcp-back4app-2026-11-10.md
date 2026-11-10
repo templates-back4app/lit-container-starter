@@ -130,3 +130,9 @@ The summary names the variable and never shows its value. The confirmation was v
 - `gzip_proxied any;` on Back4app.
 - A wrong port on an image that listens on no port at all, or on several.
 - Not tested anywhere in this series: `rollback_web_app`, `confirm_action`, custom domains, env vars at creation, GitHub as the code source through MCP, behaviour after `urlExpiresAt`, a temporary (not signed in) account, the `files` upload path for clients with no terminal.
+
+## Compression fix verified on the public URL (2026-11-10)
+
+- Cause: requests reach the container through the platform's CDN with a `Via` header, and nginx's `gzip_proxied` is off by default, so nginx answered them uncompressed and the CDN compressed the response itself.
+- Fix: `gzip_proxied any;` in nginx.conf (commit f81532b), redeployed to the same app with `deploy_web_app`.
+- Main JS transferred from the public URL (`Accept-Encoding: gzip`): before 11,859 B, after 8,763 B. The "after" figure equals this bundle compressed by nginx at gzip_comp_level 6.
